@@ -1,0 +1,65 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body { font-family:system-ui,-apple-system,sans-serif; background:#f8f9fa; color:#333; line-height:1.6; }
+
+.container { max-width:1200px; margin:0 auto; padding:0 1rem; }
+
+header { background:#0a2540; color:white; padding:1rem 0; position:sticky; top:0; z-index:10; }
+
+header .container { display:flex; justify-content:space-between; align-items:center; }
+
+header h1 { font-size:1.8rem; }
+
+nav a { color:white; margin-left:1.5rem; text-decoration:none; font-weight:600; }
+
+nav a:hover { opacity:0.8; }
+
+.login { background:#ff6b35; padding:0.5rem 1rem; border-radius:6px; }
+
+.hero { background:linear-gradient(135deg,#0a2540,#1e3a8a); color:white; text-align:center; padding:5rem 0; }
+
+.hero h2 { font-size:2.8rem; margin-bottom:0.5rem; }
+
+.subtitle { font-size:1.4rem; opacity:0.9; margin-bottom:2rem; }
+
+.top-pick { background:white; color:#333; max-width:650px; margin:2rem auto; padding:2.5rem; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+
+.bonus { font-size:1.7rem; font-weight:bold; color:#10b981; margin:1rem 0; }
+
+.cta { background:#ff6b35; color:white; padding:1rem 2.5rem; border-radius:8px; font-size:1.3rem; text-decoration:none; display:inline-block; margin-top:1rem; }
+
+.cta:hover { background:#e55a2b; }
+
+.comparison { padding:3rem 0; }
+
+.comparison h2 { text-align:center; margin-bottom:2rem; font-size:2rem; }
+
+table { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.05); margin:2rem 0; }
+
+th, td { padding:1.2rem; text-align:left; border-bottom:1px solid #eee; }
+
+th { background:#f1f5f9; font-weight:600; }
+
+tr.highlight { background:#fffbeb; }
+
+.disclosure { font-size:0.9rem; color:#666; text-align:center; margin:2rem 0; }
+
+.points-teaser { background:#ecfdf5; padding:4rem 0; text-align:center; }
+
+.points-teaser h2 { color:#065f46; margin-bottom:1rem; }
+
+.points-teaser p { font-size:1.2rem; margin-bottom:2rem; }
+
+footer { background:#0a2540; color:white; text-align:center; padding:2rem 0; }
+
+@media (max-width:768px) {
+
+  .hero h2 { font-size:2.2rem; }
+
+  header .container { flex-direction:column; gap:1rem; }
+
+  nav a { margin:0 0.75rem; }
+
+  table { font-size:0.9rem; }
+
+}
