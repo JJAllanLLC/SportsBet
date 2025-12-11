@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sportsbook67 - Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
     .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -33,60 +32,114 @@
     </div>
   </div>
 
-  <script>
-    const supabase = Supabase.createClient(
-      'https://rtbkqwrfomjkualonmtj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
-    );
+  <script type="module">
 
-    async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        document.getElementById('auth').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        document.getElementById('user-email').textContent = user.email;
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-        // Get points
-        const { data } = await supabase
-          .from('users')
-          .select('points, referral_code')
-          .eq('id', user.id)
-          .single();
 
-        document.getElementById('points').textContent = data.points.toLocaleString() + ' pts';
-        document.getElementById('ref-link').textContent = 
-          location.origin + '?ref=' + data.referral_code;
-      }
-    }
 
-    document.getElementById('signup').onclick = async () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (!error) alert('Signed up! Check your email (or just refresh — no confirmation needed)');
-      loadUser();
-    };
+  const supabase = createClient(
 
-    document.getElementById('login').onclick = async () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      await supabase.auth.signInWithPassword({ email, password });
-      loadUser();
-    };
+    'https://rtbkqwrfomjkualonmtj.supabase.co',
 
-    document.getElementById('logout').onclick = async () => {
-      await supabase.auth.signOut();
-      location.reload();
-    };
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
 
-    // Referral handling
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get('ref');
-    if (ref && !supabase.auth.getUser()) {
-      localStorage.setItem('ref', ref);
-    }
+  )
 
-    loadUser();
-  </script>
+
+
+  async function loadUser() {
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return document.getElementById('dashboard').classList.add('hidden')
+
+
+
+    document.getElementById('auth').classList.add('hidden')
+
+    document.getElementById('dashboard').classList.remove('hidden')
+
+    document.getElementById('user-email').textContent = user.email
+
+
+
+    const { data } = await supabase
+
+      .from('users')
+
+      .select('points, referral_code')
+
+      .eq('id', user.id)
+
+      .single()
+
+
+
+    document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
+
+    document.getElementById('ref-link').textContent = location.origin + '?ref=' + (data?.referral_code || '')
+
+  }
+
+
+
+  document.getElementById('signup').onclick = async () => {
+
+    const email = document.getElementById('email').value
+
+    const password = document.getElementById('password').value
+
+    const { error } = await supabase.auth.signUp({ email, password })
+
+    if (error) alert(error.message)
+
+    else alert('Signed up! You got 5,000 points!')
+
+    loadUser()
+
+  }
+
+
+
+  document.getElementById('login').onclick = async () => {
+
+    const email = document.getElementById('email').value
+
+    password = document.getElementById('password').value
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) alert(error.message)
+
+    loadUser()
+
+  }
+
+
+
+  document.getElementById('logout').onclick = async () => {
+
+    await supabase.auth.signOut()
+
+    location.reload()
+
+  }
+
+
+
+  // Referral handling
+
+  const urlParams = new URLSearchParams(window.location.search)
+
+  const ref = urlParams.get('ref')
+
+  if (ref) localStorage.setItem('ref', ref)
+
+
+
+  loadUser()
+
+</script>
 </body>
 </html>
