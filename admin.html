@@ -38,7 +38,7 @@
             
             // Check user email
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user || user.email !== 'jkadian@hotmail.com') {
+            if (!user || user.email !== 'jjallanllc@gmail.com') {
                 window.location.href = '/';
                 return;
             }
@@ -216,7 +216,7 @@
     <script src="auth.js"></script>
     <script>
         // Replace with your actual email address
-        const ADMIN_EMAIL = 'jkadian@hotmail.com';
+        const ADMIN_EMAIL = 'jjallanllc@gmail.com';
         
         // Replace with your actual Supabase credentials (same as dashboard.html)
         const { createClient } = supabase;
