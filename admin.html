@@ -5,6 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redemption Manager – SportsBook67</title>
     <meta name="description" content="Admin page to manage point redemptions and send Amazon gift cards.">
+    <!-- Supabase - Load first for pre-auth check -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Pre-auth check - runs immediately to prevent page flash
+        (async () => {
+            // Hide body until check passes (wait for body to exist)
+            const hideBody = () => {
+                if (document.body) {
+                    document.body.style.display = 'none';
+                } else {
+                    setTimeout(hideBody, 10);
+                }
+            };
+            hideBody();
+            
+            // Wait for Supabase to load
+            while (typeof supabase === 'undefined') {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            
+            // Replace with your actual Supabase credentials (same as dashboard.html)
+            const { createClient } = supabase;
+            const supabaseClient = createClient('https://YOUR_ACTUAL_PROJECT.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+            
+            // Check session
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Check user email
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user || user.email !== 'jkadian@hotmail.com') {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Only load the page if authorized
+            if (document.body) {
+                document.body.style.display = 'block';
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="styles.css">
     <style>
         .admin-container {
@@ -120,7 +164,7 @@
         }
     </style>
 </head>
-<body>
+<body style="display: none;">
     <header>
         <div class="container">
             <h1>SportsBook67</h1>
@@ -168,15 +212,15 @@
         </div>
     </footer>
 
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase client for page functionality -->
     <script src="auth.js"></script>
     <script>
         // Replace with your actual email address
-        const ADMIN_EMAIL = 'YOUR_PERSONAL_EMAIL@gmail.com';
+        const ADMIN_EMAIL = 'jkadian@hotmail.com';
         
         // Replace with your actual Supabase credentials (same as dashboard.html)
-        const supabase = Supabase.createClient('https://YOUR_ACTUAL_PROJECT.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        const { createClient } = supabase;
+        const supabaseClient = createClient('https://YOUR_ACTUAL_PROJECT.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
         // Generate a gift card code (you can replace this with your actual gift card generation logic)
         function generateGiftCardCode() {
@@ -190,7 +234,7 @@
         }
 
         async function checkAdminAccess() {
-            const { data: { user }, error } = await supabase.auth.getUser();
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
             
             if (error || !user) {
                 window.location.href = 'index.html?error=access_denied';
@@ -210,7 +254,7 @@
             if (!hasAccess) return;
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('redemptions')
                     .select('*')
                     .order('requested_at', { ascending: false });
@@ -278,7 +322,7 @@
             const giftCardCode = generateGiftCardCode();
 
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('redemptions')
                     .update({ 
                         status: 'sent',
