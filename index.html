@@ -36,6 +36,12 @@
 
                 <a href="ufc.html">UFC</a>
 
+                <a id="points-button" href="/dashboard.html" class="btn-orange" style="font-weight:bold;">
+
+                  Loading...
+
+                </a>
+
                 <!-- Auth buttons will be added by auth.js -->
 
             </nav>
@@ -131,6 +137,57 @@
                 }
             }
         });
+
+        async function updatePointsButton() {
+            // Get supabase client from auth.js or create one
+            let supabase = null;
+            if (typeof getSupabaseClient === 'function') {
+                supabase = getSupabaseClient();
+            }
+            
+            if (!supabase) {
+                // Wait for Supabase library
+                if (typeof window.supabase === 'undefined') {
+                    setTimeout(updatePointsButton, 100);
+                    return;
+                }
+                const { createClient } = window.supabase;
+                supabase = createClient('YOUR_URL', 'YOUR_ANON_KEY');
+            }
+
+            const { data: { user } } = await supabase.auth.getUser();
+            const button = document.getElementById('points-button');
+
+            if (user) {
+                button.textContent = 'My Rewards (5,000 pts)';
+                button.href = '/dashboard.html';
+            } else {
+                button.textContent = 'My Rewards → 5,000 Points Free';
+                button.href = '/dashboard.html';
+            }
+        }
+
+        // Run on load and when auth state changes
+        updatePointsButton();
+        
+        // Set up auth state listener
+        (async () => {
+            // Wait for supabase to be available
+            while (typeof window.supabase === 'undefined') {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            let supabase = null;
+            if (typeof getSupabaseClient === 'function') {
+                supabase = getSupabaseClient();
+            }
+            if (!supabase) {
+                const { createClient } = window.supabase;
+                supabase = createClient('YOUR_URL', 'YOUR_ANON_KEY');
+            }
+            
+            supabase.auth.onAuthStateChange(() => updatePointsButton());
+        })();
     </script>
 
 <!-- Launch v1 – Live Dec 2025 – trigger GitHub Pages build -->

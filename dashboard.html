@@ -217,7 +217,11 @@
                 <a href="nfl.html">NFL</a>
                 <a href="nba.html">NBA</a>
                 <a href="ufc.html">UFC</a>
-                <a href="dashboard.html" class="active">Points Dashboard</a>
+                <a id="points-button" href="/dashboard.html" class="btn-orange active" style="font-weight:bold;">
+
+                  Loading...
+
+                </a>
                 <!-- Auth buttons will be added by auth.js -->
             </nav>
         </div>
@@ -320,6 +324,23 @@
       }
 
       loadDashboard()
+
+      async function updatePointsButton() {
+          const { data: { user } } = await supabase.auth.getUser()
+          const button = document.getElementById('points-button')
+
+          if (user) {
+              button.textContent = 'My Rewards (5,000 pts)'
+              button.href = '/dashboard.html'
+          } else {
+              button.textContent = 'My Rewards → 5,000 Points Free'
+              button.href = '/dashboard.html'
+          }
+      }
+
+      // Run on load and when auth state changes
+      updatePointsButton()
+      supabase.auth.onAuthStateChange(() => updatePointsButton())
     </script>
 </body>
 </html>
