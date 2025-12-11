@@ -14,13 +14,5 @@ window.addEventListener('scroll', () => {
 
 
 
-// Temporary alert for points login (real login comes tomorrow)
-
-document.querySelector('.login')?.addEventListener('click', (e) => {
-
-  e.preventDefault();
-
-  alert('Points dashboard + real login launching tomorrow! Get ready to earn Amazon cards.');
-
-});
+// Login functionality is now handled by auth.js
 

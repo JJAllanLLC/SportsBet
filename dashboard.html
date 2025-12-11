@@ -217,7 +217,8 @@
                 <a href="nfl.html">NFL</a>
                 <a href="nba.html">NBA</a>
                 <a href="ufc.html">UFC</a>
-                <a href="dashboard.html" class="login active">Points Dashboard</a>
+                <a href="dashboard.html" class="active">Points Dashboard</a>
+                <!-- Auth buttons will be added by auth.js -->
             </nav>
         </div>
     </header>
@@ -286,20 +287,16 @@
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
     <script>
-        const { createClient } = supabase
-        const supabaseClient = createClient(
-            'https://rtbkqwrfomjkualonmtj.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
-        )
-
         // Auth check - redirect if not logged in
         async function checkAuth() {
+            const supabaseClient = getSupabaseClient()
             const { data: { user }, error } = await supabaseClient.auth.getUser()
             
             if (!user || error) {
                 // Redirect to home with message
-                window.location.href = '/?message=Please log in to access your dashboard'
+                window.location.href = 'index.html?message=Please log in to access your dashboard'
                 return null
             }
             
@@ -310,6 +307,8 @@
         async function loadDashboard() {
             const user = await checkAuth()
             if (!user) return
+
+            const supabaseClient = getSupabaseClient()
 
             // Update welcome message
             document.getElementById('welcome-message').textContent = `Welcome back, ${user.email}!`
@@ -347,24 +346,12 @@
             })
         }
 
-        // Logout functionality
+        // Wait for auth to initialize, then load dashboard
         document.addEventListener('DOMContentLoaded', () => {
-            // Add logout button to header nav
-            const nav = document.querySelector('nav')
-            const logoutBtn = document.createElement('a')
-            logoutBtn.href = '#'
-            logoutBtn.className = 'logout-btn'
-            logoutBtn.textContent = 'Logout'
-            logoutBtn.style.marginLeft = '1rem'
-            logoutBtn.addEventListener('click', async (e) => {
-                e.preventDefault()
-                await supabaseClient.auth.signOut()
-                window.location.href = '/?message=You have been logged out successfully'
-            })
-            nav.appendChild(logoutBtn)
-
-            // Load dashboard
-            loadDashboard()
+            // Wait a bit for auth.js to initialize
+            setTimeout(() => {
+                loadDashboard()
+            }, 100)
         })
     </script>
     <script src="script.js"></script>
