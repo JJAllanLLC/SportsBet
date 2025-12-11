@@ -1,100 +1,372 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sportsbook67 Rewards</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
-    .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    input, button { padding: 12px; margin: 10px; width: 80%; font-size: 16px; }
-    button { background: #00b300; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .hidden { display: none; }
-    .points { font-size: 36px; font-weight: bold; color: #00b300; margin: 20px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Dashboard | SportsBook67</title>
+    <meta name="description" content="Track your points, referrals, and redeem Amazon gift cards.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .welcome-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .welcome-section h2 {
+            color: #0a2540;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        .points-display {
+            background: linear-gradient(135deg, #0a2540, #1e3a8a);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .points-display h3 {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        .points-display .big-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .points-history {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        .points-history h3 {
+            color: #0a2540;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .points-history table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .points-history th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+        }
+        .points-history td {
+            padding: 1rem;
+        }
+        .points-history .points-positive {
+            color: #10b981;
+            font-weight: 600;
+        }
+        .referral-section, .redeem-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .referral-section h3, .redeem-section h3 {
+            color: #0a2540;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .referral-link-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .referral-link-box code {
+            flex: 1;
+            min-width: 200px;
+            font-size: 0.9rem;
+            color: #0a2540;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #0a2540;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover {
+            background: #1e3a8a;
+        }
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+        .referral-stats {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #ecfdf5;
+            border-radius: 8px;
+            color: #065f46;
+        }
+        .redeem-btn {
+            background: #ff6b35;
+            color: white;
+            padding: 1.5rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .redeem-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .redeem-btn:not(:disabled):hover {
+            background: #e55a2b;
+        }
+        .logout-btn {
+            background: #ff6b35;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .logout-btn:hover {
+            background: #e55a2b;
+        }
+        nav a.active {
+            background: #ff6b35;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 1rem auto;
+            }
+            .welcome-section, .points-history, .referral-section, .redeem-section {
+                padding: 1.5rem;
+            }
+            .points-display .big-number {
+                font-size: 2.5rem;
+            }
+            .referral-link-box {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .copy-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Sportsbook67 Rewards</h1>
+    <header>
+        <div class="container">
+            <h1>SportsBook67</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="nfl.html">NFL</a>
+                <a href="nba.html">NBA</a>
+                <a href="ufc.html">UFC</a>
+                <a href="dashboard.html" class="login active">Points Dashboard</a>
+            </nav>
+        </div>
+    </header>
 
-    <div id="auth">
-      <div style="background:#fff8e1;padding:12px;border-radius:8px;margin:15px 0;font-size:14px;color:#663c00;border-left:4px solid #ffca28;">
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h2 id="welcome-message">Welcome back!</h2>
+        </div>
 
-  📧 <strong>Tip:</strong> Confirmation emails sometimes land in Spam/Junk. 
+        <div class="points-display">
+            <h3>Your Points</h3>
+            <div class="big-number" id="points-display">5,000</div>
+        </div>
 
-  If you don't see it in your inbox, please check there!
+        <div class="points-history">
+            <h3>Points History</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Action</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Today</td>
+                        <td>Signup Bonus</td>
+                        <td class="points-positive">+5,000</td>
+                    </tr>
+                    <tr>
+                        <td>–</td>
+                        <td>–</td>
+                        <td>–</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-</div>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
-      <button id="login">Log In</button>
-      <button id="signup">Sign Up – Get 5,000 Points!</button>
+        <div class="referral-section">
+            <h3>Referral Program</h3>
+            <p>Share your link and earn 10,000 points for each friend who signs up!</p>
+            <div class="referral-link-box">
+                <code id="referral-link">https://sportsbook67.com/?ref=loading...</code>
+                <button class="copy-btn" id="copy-btn">Copy</button>
+            </div>
+            <div class="referral-stats">
+                <strong>Referred users: 0</strong> → Earn 10,000 points per signup
+            </div>
+        </div>
+
+        <div class="redeem-section">
+            <h3>Redeem Points</h3>
+            <div class="tooltip">
+                <button class="redeem-btn" id="redeem-btn" disabled>Redeem 10,000 points → $10 Amazon Gift Card</button>
+                <span class="tooltiptext">Coming when first referrals join</span>
+            </div>
+        </div>
     </div>
 
-    <div id="dashboard" class="hidden">
-      <p>Welcome <span id="user-email"></span>!</p>
-      <div class="points" id="points">Loading...</div>
-      <p>Share: <strong id="ref-link"></strong></p>
-      <button id="logout">Log Out</button>
-    </div>
-  </div>
+    <footer>
+        <div class="container">
+            <p>© 2025 JJAllanLLC</p>
+        </div>
+    </footer>
 
-  <!-- The ONLY working Supabase script for GitHub Pages right now -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script>
+        const { createClient } = supabase
+        const supabaseClient = createClient(
+            'https://rtbkqwrfomjkualonmtj.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
+        )
 
-  <script>
-    const { createClient } = supabase
-    const supabase = createClient(
-      'https://rtbkqwrfomjkualonmtj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
-    )
+        // Auth check - redirect if not logged in
+        async function checkAuth() {
+            const { data: { user }, error } = await supabaseClient.auth.getUser()
+            
+            if (!user || error) {
+                // Redirect to home with message
+                window.location.href = '/?message=Please log in to access your dashboard'
+                return null
+            }
+            
+            return user
+        }
 
-    async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        document.getElementById('dashboard').classList.add('hidden')
-        document.getElementById('auth').classList.remove('hidden')
-        return
-      }
+        // Load dashboard data
+        async function loadDashboard() {
+            const user = await checkAuth()
+            if (!user) return
 
-      document.getElementById('auth').classList.add('hidden')
-      document.getElementById('dashboard').classList.remove('hidden')
-      document.getElementById('user-email').textContent = user.email
+            // Update welcome message
+            document.getElementById('welcome-message').textContent = `Welcome back, ${user.email}!`
 
-      const { data } = await supabase
-        .from('users')
-        .select('points, referral_code')
-        .eq('id', user.id)
-        .single()
+            // Get user data from database
+            const { data: userData } = await supabaseClient
+                .from('users')
+                .select('points, referral_code')
+                .eq('id', user.id)
+                .single()
 
-      document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
-      document.getElementById('ref-link').textContent = location.origin + '/dashboard.html?ref=' + (data?.referral_code || '')
-    }
+            // Update points display (hardcoded for now, but ready for dynamic)
+            const points = userData?.points || 5000
+            document.getElementById('points-display').textContent = points.toLocaleString()
 
-    document.getElementById('signup').onclick = async () => {
-      const email = document.getElementById('email').value.trim()
-      const password = document.getElementById('password').value
-      if (!email || !password) return alert('Fill both fields')
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) alert('Error: ' + error.message)
-      else alert('Signed up! You got 5,000 points!')
-      loadUser()
-    }
+            // Update referral link
+            const referralCode = userData?.referral_code || user.id.substring(0, 8)
+            const referralLink = `${window.location.origin}/?ref=${referralCode}`
+            document.getElementById('referral-link').textContent = referralLink
 
-    document.getElementById('login').onclick = async () => {
-      const email = document.getElementById('email').value.trim()
-      const password = document.getElementById('password').value
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) alert('Error: ' + error.message)
-      loadUser()
-    }
+            // Copy button functionality
+            document.getElementById('copy-btn').addEventListener('click', () => {
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    const btn = document.getElementById('copy-btn')
+                    const originalText = btn.textContent
+                    btn.textContent = 'Copied!'
+                    btn.style.background = '#10b981'
+                    setTimeout(() => {
+                        btn.textContent = originalText
+                        btn.style.background = '#0a2540'
+                    }, 2000)
+                }).catch(() => {
+                    alert('Failed to copy. Please copy manually.')
+                })
+            })
+        }
 
-    document.getElementById('logout').onclick = async () => {
-      await supabase.auth.signOut()
-      location.reload()
-    }
+        // Logout functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add logout button to header nav
+            const nav = document.querySelector('nav')
+            const logoutBtn = document.createElement('a')
+            logoutBtn.href = '#'
+            logoutBtn.className = 'logout-btn'
+            logoutBtn.textContent = 'Logout'
+            logoutBtn.style.marginLeft = '1rem'
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault()
+                await supabaseClient.auth.signOut()
+                window.location.href = '/?message=You have been logged out successfully'
+            })
+            nav.appendChild(logoutBtn)
 
-    loadUser()
-  </script>
+            // Load dashboard
+            loadDashboard()
+        })
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>
