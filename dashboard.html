@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <title>Sportsbook67 - Rewards Dashboard</title>
+  <title>Sportsbook67 Rewards</title>
 
   <style>
 
@@ -56,7 +56,7 @@
 
       <div class="points" id="points">0 pts</div>
 
-      <p>Share your link: <strong id="ref-link"></strong></p>
+      <p>Share: <strong id="ref-link"></strong></p>
 
       <button id="logout">Log Out</button>
 
@@ -79,62 +79,6 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
 
     )
-
-
-
-    // Wait for everything to load
-
-    async function init() {
-
-      await loadUser()
-
-
-
-      document.getElementById('signup').onclick = async () => {
-
-        const email = document.getElementById('email').value.trim()
-
-        const password = document.getElementById('password').value
-
-        if (!email || !password) return alert('Fill both fields')
-
-        const { error } = await supabase.auth.signUp({ email, password })
-
-        if (error) alert('Error: ' + error.message)
-
-        else alert('Signed up! You got 5,000 points!')
-
-        loadUser()
-
-      }
-
-
-
-      document.getElementById('login').onclick = async () => {
-
-        const email = document.getElementById('email').value.trim()
-
-        const password = document.getElementById('password').value
-
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-        if (error) alert('Error: ' + error.message)
-
-        loadUser()
-
-      }
-
-
-
-      document.getElementById('logout').onclick = async () => {
-
-        await supabase.auth.signOut()
-
-        location.reload()
-
-      }
-
-    }
 
 
 
@@ -182,9 +126,55 @@
 
 
 
-    // Start everything
+    document.getElementById('signup').addEventListener('click', async () => {
 
-    init()
+      const email = document.getElementById('email').value.trim()
+
+      const password = document.getElementById('password').value
+
+      if (!email || !password) return alert('Fill both fields')
+
+      const { error } = await supabase.auth.signUp({ email, password })
+
+      if (error) alert('Error: ' + error.message)
+
+      else alert('Signed up! You got 5,000 points!')
+
+      loadUser()
+
+    })
+
+
+
+    document.getElementById('login').addEventListener('click', async () => {
+
+      const email = document.getElementById('email').value.trim()
+
+      const password = document.getElementById('password').value
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) alert('Error: ' + error.message)
+
+      loadUser()
+
+    })
+
+
+
+    document.getElementById('logout').addEventListener('click', async () => {
+
+      await supabase.auth.signOut()
+
+      location.reload()
+
+    })
+
+
+
+    loadUser()
+
+  // start the app
 
   </script>
 
