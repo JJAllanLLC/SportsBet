@@ -219,7 +219,7 @@
                 <a href="ufc.html">UFC</a>
                 <a id="points-button" href="/dashboard.html" class="btn-orange active" style="font-weight:bold;">
 
-                  Loading...
+                  My Rewards → 5,000 Points Free
 
                 </a>
                 <!-- Auth buttons will be added by auth.js -->
@@ -295,7 +295,7 @@
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script>
-      const supabase = Supabase.createClient('https://YOUR_ACTUAL_PROJECT.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+      const supabase = Supabase.createClient('YOUR_URL', 'YOUR_ANON_KEY')
 
       async function loadDashboard() {
         const { data: { user } } = await supabase.auth.getUser()
@@ -326,21 +326,28 @@
       loadDashboard()
 
       async function updatePointsButton() {
-          const { data: { user } } = await supabase.auth.getUser()
-          const button = document.getElementById('points-button')
+          try {
+              const { data: { user } } = await supabase.auth.getUser()
+              const button = document.getElementById('points-button')
+              
+              if (!button) return
 
-          if (user) {
-              button.textContent = 'My Rewards (5,000 pts)'
-              button.href = '/dashboard.html'
-          } else {
-              button.textContent = 'My Rewards → 5,000 Points Free'
-              button.href = '/dashboard.html'
+              if (user) {
+                  button.textContent = 'My Rewards (5,000 pts)'
+              } else {
+                  button.textContent = 'My Rewards → 5,000 Points Free'
+              }
+          } catch (e) {
+              const button = document.getElementById('points-button')
+              if (button) {
+                  button.textContent = 'My Rewards → 5,000 Points Free'
+              }
           }
       }
 
-      // Run on load and when auth state changes
-      updatePointsButton()
-      supabase.auth.onAuthStateChange(() => updatePointsButton())
+      // Run when page loads and when auth changes
+      document.addEventListener('DOMContentLoaded', updatePointsButton)
+      supabase.auth.onAuthStateChange(updatePointsButton)
     </script>
 </body>
 </html>
