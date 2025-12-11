@@ -38,57 +38,19 @@
 
 
 
-  const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co'
+  const supabase = createClient(
 
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
+    'https://rtbkqwrfomjkualonmtj.supabase.co',
 
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
 
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-
-
-  async function loadUser() {
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-
-      document.getElementById('dashboard').classList.add('hidden')
-
-      document.getElementById('auth').classList.remove('hidden')
-
-      return
-
-    }
+  )
 
 
 
-    document.getElementById('auth').classList.add('hidden')
+  // Everything runs after the client is ready
 
-    document.getElementById('dashboard').classList.remove('hidden')
-
-    document.getElementById('user-email').textContent = user.email
-
-
-
-    const { data } = await supabase
-
-      .from('users')
-
-      .select('points, referral_code')
-
-      .eq('id', user.id)
-
-      .single()
-
-
-
-    document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
-
-    document.getElementById('ref-link').textContent = location.origin + '?ref=' + (data?.referral_code || '')
-
-  }
+  const { data: { user } } = await supabase.auth.getUser()
 
 
 
@@ -98,13 +60,13 @@
 
     const password = document.getElementById('password').value
 
-    if (!email || !password) return alert('Fill in both fields')
+    if (!email || !password) return alert('Fill both fields')
 
     const { error } = await supabase.auth.signUp({ email, password })
 
     if (error) alert(error.message)
 
-    else alert('Signed up! You got 5,000 points!')
+    else alert('Signed up! 5,000 points added!')
 
     loadUser()
 
@@ -138,13 +100,37 @@
 
 
 
-  // Referral handling
+  async function loadUser() {
 
-  const urlParams = new URLSearchParams(window.location.search)
+    const { data: { user } } = await supabase.auth.getUser()
 
-  const ref = urlParams.get('ref')
+    if (!user) {
 
-  if (ref) localStorage.setItem('ref', ref)
+      document.getElementById('dashboard').classList.add('hidden')
+
+      document.getElementById('auth').classList.remove('hidden')
+
+      return
+
+    }
+
+
+
+    document.getElementById('auth').classList.add('hidden')
+
+    document.getElementById('dashboard').classList.remove('hidden')
+
+    document.getElementById('user-email').textContent = user.email
+
+
+
+    const { data } = await supabase.from('users').select('points, referral_code').eq('id', user.id).single()
+
+    document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
+
+    document.getElementById('ref-link').textContent = location.origin + '?ref=' + (data?.referral_code || '')
+
+  }
 
 
 
