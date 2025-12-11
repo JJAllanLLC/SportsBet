@@ -119,28 +119,26 @@
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script>
-        const supabase = Supabase.createClient('YOUR_URL', 'YOUR_ANON_KEY');
+        const supabase = Supabase.createClient('YOUR_URL', 'YOUR_ANON_KEY')
 
-        async function updatePointsButton() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                const button = document.getElementById('points-button');
-                
-                if (!button) return;
+        function setButtonText() {
+            const button = document.getElementById('points-button')
+            if (!button) return
 
+            supabase.auth.getUser().then(({ data: { user } }) => {
                 if (user) {
-                    button.textContent = 'My Rewards (5,000 pts)';
+                    button.textContent = 'My Rewards (5,000 pts)'
                 } else {
-                    button.textContent = 'My Rewards → 5,000 Points Free';
+                    button.textContent = 'My Rewards → 5,000 Points Free'
                 }
-            } catch (e) {
-                document.getElementById('points-button').textContent = 'My Rewards → 5,000 Points Free';
-            }
+            }).catch(() => {
+                button.textContent = 'My Rewards → 5,000 Points Free'
+            })
         }
 
-        // Run when page loads and when auth changes
-        document.addEventListener('DOMContentLoaded', updatePointsButton);
-        supabase.auth.onAuthStateChange(updatePointsButton);
+        // Run on load + when auth changes
+        document.addEventListener('DOMContentLoaded', setButtonText)
+        supabase.auth.onAuthStateChange(setButtonText)
     </script>
 
 </body>

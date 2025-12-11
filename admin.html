@@ -368,29 +368,24 @@
         // Initialize
         loadRedemptions();
 
-        async function updatePointsButton() {
-            try {
-                const { data: { user } } = await supabaseClient.auth.getUser()
-                const button = document.getElementById('points-button')
-                
-                if (!button) return
+        function setButtonText() {
+            const button = document.getElementById('points-button')
+            if (!button) return
 
+            supabaseClient.auth.getUser().then(({ data: { user } }) => {
                 if (user) {
                     button.textContent = 'My Rewards (5,000 pts)'
                 } else {
                     button.textContent = 'My Rewards → 5,000 Points Free'
                 }
-            } catch (e) {
-                const button = document.getElementById('points-button')
-                if (button) {
-                    button.textContent = 'My Rewards → 5,000 Points Free'
-                }
-            }
+            }).catch(() => {
+                button.textContent = 'My Rewards → 5,000 Points Free'
+            })
         }
 
-        // Run when page loads and when auth changes
-        document.addEventListener('DOMContentLoaded', updatePointsButton)
-        supabaseClient.auth.onAuthStateChange(updatePointsButton)
+        // Run on load + when auth changes
+        document.addEventListener('DOMContentLoaded', setButtonText)
+        supabaseClient.auth.onAuthStateChange(setButtonText)
     </script>
 </body>
 </html>
