@@ -213,7 +213,7 @@
                 const { data, error } = await supabase
                     .from('redemptions')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('requested_at', { ascending: false });
 
                 if (error) {
                     throw error;
@@ -229,7 +229,7 @@
 
                     data.forEach(redemption => {
                         const row = document.createElement('tr');
-                        const date = new Date(redemption.created_at || redemption.date_requested);
+                        const date = new Date(redemption.requested_at);
                         const formattedDate = date.toLocaleDateString('en-US', { 
                             year: 'numeric', 
                             month: 'short', 
@@ -238,14 +238,15 @@
                             minute: '2-digit'
                         });
 
-                        const statusClass = redemption.status === 'Sent' ? 'status-sent' : 'status-pending';
-                        const isPending = redemption.status === 'Pending' || !redemption.status;
+                        const status = redemption.status || 'pending';
+                        const statusClass = status.toLowerCase() === 'sent' ? 'status-sent' : 'status-pending';
+                        const isPending = status.toLowerCase() === 'pending';
 
                         row.innerHTML = `
                             <td>${redemption.user_email || 'N/A'}</td>
-                            <td>10,000</td>
+                            <td>${redemption.points ? redemption.points.toLocaleString() : '10,000'}</td>
                             <td>${formattedDate}</td>
-                            <td><span class="${statusClass}">${redemption.status || 'Pending'}</span></td>
+                            <td><span class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
                             <td>
                                 ${isPending 
                                     ? `<button class="send-btn" onclick="sendGiftCard('${redemption.id}')">Send $10 Amazon Gift Card</button>`
@@ -280,7 +281,7 @@
                 const { error } = await supabase
                     .from('redemptions')
                     .update({ 
-                        status: 'Sent',
+                        status: 'sent',
                         gift_card_code: giftCardCode,
                         sent_at: new Date().toISOString()
                     })
