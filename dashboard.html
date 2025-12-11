@@ -32,11 +32,12 @@
     </div>
   </div>
 
-  <!-- THIS IS THE ONLY LINE THAT WORKS RELIABLY ON GITHUB PAGES -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- The ONLY working Supabase script for GitHub Pages right now -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
   <script>
-    const supabase = window.supabase.createClient(
+    const { createClient } = supabase
+    const supabase = createClient(
       'https://rtbkqwrfomjkualonmtj.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
     )
