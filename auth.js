@@ -1,6 +1,9 @@
 // Shared Supabase Auth Configuration
 let supabaseClient = null
 
+// Admin email - replace with your actual email
+const ADMIN_EMAIL = 'YOUR_PERSONAL_EMAIL@gmail.com'
+
 // Wait for Supabase to load, then initialize
 function initSupabase() {
     if (typeof supabase === 'undefined') {
@@ -63,8 +66,26 @@ function updateHeaderForLoggedIn(user) {
     // Remove existing login/logout elements
     const existingLogin = nav.querySelector('.auth-login')
     const existingUserInfo = nav.querySelector('.auth-user-info')
+    const existingAdminLink = nav.querySelector('.admin-link')
     if (existingLogin) existingLogin.remove()
     if (existingUserInfo) existingUserInfo.remove()
+    if (existingAdminLink) existingAdminLink.remove()
+
+    // Add admin link if user is admin (only visible to admin)
+    if (user.email === ADMIN_EMAIL) {
+        const adminLink = document.createElement('a')
+        adminLink.href = 'admin.html'
+        adminLink.className = 'admin-link'
+        adminLink.textContent = 'Admin'
+        adminLink.style.cssText = 'color: white; margin-left: 1.5rem; text-decoration: none; font-weight: 600; background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 6px;'
+        adminLink.addEventListener('mouseenter', () => {
+            adminLink.style.background = 'rgba(255,255,255,0.3)'
+        })
+        adminLink.addEventListener('mouseleave', () => {
+            adminLink.style.background = 'rgba(255,255,255,0.2)'
+        })
+        nav.appendChild(adminLink)
+    }
 
     // Create user info container
     const userInfo = document.createElement('div')
@@ -96,8 +117,10 @@ function updateHeaderForLoggedOut() {
     // Remove existing login/logout elements
     const existingLogin = nav.querySelector('.auth-login')
     const existingUserInfo = nav.querySelector('.auth-user-info')
+    const existingAdminLink = nav.querySelector('.admin-link')
     if (existingLogin) existingLogin.remove()
     if (existingUserInfo) existingUserInfo.remove()
+    if (existingAdminLink) existingAdminLink.remove()
 
     // Create login button
     const loginBtn = document.createElement('a')

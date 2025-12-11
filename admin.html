@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redemption Manager – SportsBook67</title>
+    <meta name="description" content="Admin page to manage point redemptions and send Amazon gift cards.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .admin-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .admin-header h2 {
+            color: #0a2540;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        .redemptions-table {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        .redemptions-table h3 {
+            color: #0a2540;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .redemptions-table table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .redemptions-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .redemptions-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .redemptions-table tr:hover {
+            background: #f8f9fa;
+        }
+        .status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        .status-sent {
+            color: #10b981;
+            font-weight: 600;
+        }
+        .send-btn {
+            background: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        .send-btn:hover {
+            background: #059669;
+        }
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .gift-card-code {
+            color: #0a2540;
+            font-weight: 600;
+            font-family: monospace;
+            background: #ecfdf5;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .admin-container {
+                margin: 1rem auto;
+            }
+            .admin-header, .redemptions-table {
+                padding: 1.5rem;
+            }
+            .redemptions-table table {
+                font-size: 0.9rem;
+            }
+            .redemptions-table th,
+            .redemptions-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SportsBook67</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="nfl.html">NFL</a>
+                <a href="nba.html">NBA</a>
+                <a href="ufc.html">UFC</a>
+                <!-- Auth buttons and admin link will be added by auth.js -->
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>Redemption Manager</h2>
+            <p>Manage point redemptions and send Amazon gift cards</p>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <div class="redemptions-table">
+            <h3>Redemptions</h3>
+            <div id="loading" class="loading">Loading redemptions...</div>
+            <table id="redemptions-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>User Email</th>
+                        <th>Points Requested</th>
+                        <th>Date Requested</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="redemptions-tbody">
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 JJAllanLLC</p>
+        </div>
+    </footer>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Replace with your actual email address
+        const ADMIN_EMAIL = 'YOUR_PERSONAL_EMAIL@gmail.com';
+        
+        // Replace with your actual Supabase credentials (same as dashboard.html)
+        const supabase = Supabase.createClient('https://YOUR_ACTUAL_PROJECT.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
+        // Generate a gift card code (you can replace this with your actual gift card generation logic)
+        function generateGiftCardCode() {
+            // Generate a random 14-character code (Amazon gift card format)
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 14; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function checkAdminAccess() {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            if (error || !user) {
+                window.location.href = 'index.html?error=access_denied';
+                return false;
+            }
+
+            if (user.email !== ADMIN_EMAIL) {
+                window.location.href = 'index.html?error=access_denied';
+                return false;
+            }
+
+            return true;
+        }
+
+        async function loadRedemptions() {
+            const hasAccess = await checkAdminAccess();
+            if (!hasAccess) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('redemptions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    throw error;
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                const table = document.getElementById('redemptions-table');
+                const tbody = document.getElementById('redemptions-tbody');
+                
+                if (data && data.length > 0) {
+                    table.style.display = 'table';
+                    tbody.innerHTML = '';
+
+                    data.forEach(redemption => {
+                        const row = document.createElement('tr');
+                        const date = new Date(redemption.created_at || redemption.date_requested);
+                        const formattedDate = date.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        const statusClass = redemption.status === 'Sent' ? 'status-sent' : 'status-pending';
+                        const isPending = redemption.status === 'Pending' || !redemption.status;
+
+                        row.innerHTML = `
+                            <td>${redemption.user_email || 'N/A'}</td>
+                            <td>10,000</td>
+                            <td>${formattedDate}</td>
+                            <td><span class="${statusClass}">${redemption.status || 'Pending'}</span></td>
+                            <td>
+                                ${isPending 
+                                    ? `<button class="send-btn" onclick="sendGiftCard('${redemption.id}')">Send $10 Amazon Gift Card</button>`
+                                    : redemption.gift_card_code 
+                                        ? `<span class="gift-card-code">${redemption.gift_card_code}</span>`
+                                        : '<span class="status-sent">Sent</span>'
+                                }
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #666;">No redemptions yet</td></tr>';
+                    table.style.display = 'table';
+                    document.getElementById('loading').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading redemptions:', error);
+                document.getElementById('loading').style.display = 'none';
+                showError('Error loading redemptions: ' + error.message);
+            }
+        }
+
+        async function sendGiftCard(redemptionId) {
+            if (!confirm('Send $10 Amazon Gift Card for this redemption?')) {
+                return;
+            }
+
+            const giftCardCode = generateGiftCardCode();
+
+            try {
+                const { error } = await supabase
+                    .from('redemptions')
+                    .update({ 
+                        status: 'Sent',
+                        gift_card_code: giftCardCode,
+                        sent_at: new Date().toISOString()
+                    })
+                    .eq('id', redemptionId);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Reload the table to show updated status
+                loadRedemptions();
+            } catch (error) {
+                console.error('Error sending gift card:', error);
+                showError('Error sending gift card: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Handle access denied message on home page
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'access_denied') {
+                // This will be handled by the redirect, but we can show a message if needed
+            }
+        });
+
+        // Initialize
+        loadRedemptions();
+    </script>
+</body>
+</html>
+
