@@ -38,9 +38,9 @@
 
     <div id="auth">
 
-      <input type="email" id="email" placeholder="Email" required />
+      <input type="email" id="email" placeholder="Email" />
 
-      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="password" placeholder="Password" />
 
       <button id="login">Log In</button>
 
@@ -68,7 +68,7 @@
 
   <script type="module">
 
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 
 
 
@@ -82,57 +82,13 @@
 
 
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    function showAuth() {
 
-      await loadUser()
+      document.getElementById('dashboard').classList.add('hidden')
 
+      document.getElementById('auth').classList.remove('hidden')
 
-
-      document.getElementById('signup').addEventListener('click', async () => {
-
-        const email = document.getElementById('email').value.trim()
-
-        const password = document.getElementById('password').value
-
-        if (!email || !password) return alert('Fill both fields')
-
-        const { error } = await supabase.auth.signUp({ email, password })
-
-        if (error) alert('Error: ' + error.message)
-
-        else alert('Signed up! You got 5,000 points!')
-
-        loadUser()
-
-      })
-
-
-
-      document.getElementById('login').addEventListener('click', async () => {
-
-        const email = document.getElementById('email').value.trim()
-
-        const password = document.getElementById('password').value
-
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-        if (error) alert('Error: ' + error.message)
-
-        loadUser()
-
-      })
-
-
-
-      document.getElementById('logout').addEventListener('click', async () => {
-
-        await supabase.auth.signOut()
-
-        location.reload()
-
-      })
-
-    })
+    }
 
 
 
@@ -140,17 +96,21 @@
 
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
+      if (user) {
 
-        document.getElementById('dashboard').classList.add('hidden')
+        showDashboard(user)
 
-        document.getElementById('auth').classList.remove('hidden')
+      } else {
 
-        return
+        showAuth()
 
       }
 
+    }
 
+
+
+    function showDashboard(user) {
 
       document.getElementById('auth').classList.add('hidden')
 
@@ -160,7 +120,7 @@
 
 
 
-      const { data } = await supabase
+      supabase
 
         .from('users')
 
@@ -170,13 +130,65 @@
 
         .single()
 
+        .then(({ data }) => {
 
+          document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
 
-      document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
+          document.getElementById('ref-link').textContent = location.origin + '/dashboard.html?ref=' + (data?.referral_code || '')
 
-      document.getElementById('ref-link').textContent = location.origin + '/dashboard.html?ref=' + (data?.referral_code || '')
+        })
 
     }
+
+
+
+    document.getElementById('signup').onclick = async () => {
+
+      const email = document.getElementById('email').value.trim()
+
+      const password = document.getElementById('password').value
+
+      if (!email || !password) return alert('Fill both fields')
+
+      const { error } = await supabase.auth.signUp({ email, password })
+
+      if (error) alert(error.message)
+
+      else alert('Signed up! You got 5,000 points!')
+
+      loadUser()
+
+    }
+
+
+
+    document.getElementById('login').onclick = async () => {
+
+      const email = document.getElementById('email').value.trim()
+
+      const password = document.getElementById('password').value
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) alert(error.message)
+
+      loadUser()
+
+    }
+
+
+
+    document.getElementById('logout').onclick = async () => {
+
+      await supabase.auth.signOut()
+
+      location.reload()
+
+    }
+
+
+
+    loadUser()
 
   </script>
 
