@@ -1,197 +1,92 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <title>Sportsbook67 Rewards</title>
-
   <style>
-
     body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
-
     .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-
     input, button { padding: 12px; margin: 10px; width: 80%; font-size: 16px; }
-
     button { background: #00b300; color: white; border: none; border-radius: 6px; cursor: pointer; }
-
     .hidden { display: none; }
-
     .points { font-size: 36px; font-weight: bold; color: #00b300; margin: 20px 0; }
-
   </style>
-
 </head>
-
 <body>
-
   <div class="container">
-
     <h1>Sportsbook67 Rewards</h1>
 
-
-
     <div id="auth">
-
       <input type="email" id="email" placeholder="Email" />
-
       <input type="password" id="password" placeholder="Password" />
-
       <button id="login">Log In</button>
-
       <button id="signup">Sign Up – Get 5,000 Points!</button>
-
     </div>
-
-
 
     <div id="dashboard" class="hidden">
-
       <p>Welcome <span id="user-email"></span>!</p>
-
       <div class="points" id="points">Loading...</div>
-
       <p>Share: <strong id="ref-link"></strong></p>
-
       <button id="logout">Log Out</button>
-
     </div>
-
   </div>
 
+  <!-- THIS IS THE ONLY LINE THAT WORKS RELIABLY ON GITHUB PAGES -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
-  <script type="module">
-
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
-
-
-
-    const supabase = createClient(
-
+  <script>
+    const supabase = window.supabase.createClient(
       'https://rtbkqwrfomjkualonmtj.supabase.co',
-
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0Ymtxd3Jmb21qa3VhbG9ubXRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjM5ODMsImV4cCI6MjA4MTAzOTk4M30.7IbAV2L1X4DWNZrDbW2YpBDoaUJFU4ztDhl_U-2tTkA'
-
     )
 
-
-
-    function showAuth() {
-
-      document.getElementById('dashboard').classList.add('hidden')
-
-      document.getElementById('auth').classList.remove('hidden')
-
-    }
-
-
-
     async function loadUser() {
-
       const { data: { user } } = await supabase.auth.getUser()
-
-      if (user) {
-
-        showDashboard(user)
-
-      } else {
-
-        showAuth()
-
+      if (!user) {
+        document.getElementById('dashboard').classList.add('hidden')
+        document.getElementById('auth').classList.remove('hidden')
+        return
       }
 
-    }
-
-
-
-    function showDashboard(user) {
-
       document.getElementById('auth').classList.add('hidden')
-
       document.getElementById('dashboard').classList.remove('hidden')
-
       document.getElementById('user-email').textContent = user.email
 
-
-
-      supabase
-
+      const { data } = await supabase
         .from('users')
-
         .select('points, referral_code')
-
         .eq('id', user.id)
-
         .single()
 
-        .then(({ data }) => {
-
-          document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
-
-          document.getElementById('ref-link').textContent = location.origin + '/dashboard.html?ref=' + (data?.referral_code || '')
-
-        })
-
+      document.getElementById('points').textContent = (data?.points || 0).toLocaleString() + ' pts'
+      document.getElementById('ref-link').textContent = location.origin + '/dashboard.html?ref=' + (data?.referral_code || '')
     }
-
-
 
     document.getElementById('signup').onclick = async () => {
-
       const email = document.getElementById('email').value.trim()
-
       const password = document.getElementById('password').value
-
       if (!email || !password) return alert('Fill both fields')
-
       const { error } = await supabase.auth.signUp({ email, password })
-
-      if (error) alert(error.message)
-
+      if (error) alert('Error: ' + error.message)
       else alert('Signed up! You got 5,000 points!')
-
       loadUser()
-
     }
-
-
 
     document.getElementById('login').onclick = async () => {
-
       const email = document.getElementById('email').value.trim()
-
       const password = document.getElementById('password').value
-
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-      if (error) alert(error.message)
-
+      if (error) alert('Error: ' + error.message)
       loadUser()
-
     }
-
-
 
     document.getElementById('logout').onclick = async () => {
-
       await supabase.auth.signOut()
-
       location.reload()
-
     }
 
-
-
     loadUser()
-
   </script>
-
 </body>
-
 </html>
