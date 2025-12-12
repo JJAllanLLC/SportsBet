@@ -209,7 +209,6 @@
     </style>
 </head>
 <body>
-    <!-- Supabase Client Initialization - Must load first -->
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
@@ -311,34 +310,6 @@
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script type="module">
-      // Wait for Supabase to be initialized
-      async function waitForSupabase() {
-        while (!window.supabase) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-        }
-        return window.supabase
-      }
-
-      async function loadDashboard() {
-        const supabase = await waitForSupabase()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        // Redirect if not logged in
-        if (!user) {
-          window.location.href = '/'
-          return
-        }
-
-        // Update welcome message
-        document.getElementById('welcome').textContent = `Welcome back, ${user.email}!`
-
-        // Update points (hardcoded 5000 for now – we'll make real later)
-        document.getElementById('points-balance').textContent = '5,000'
-      }
-
-      loadDashboard()
-
-      // Make sure supabase is available globally
       const supabase = window.supabase
 
       async function loadReferralLink() {
@@ -367,24 +338,41 @@
           const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
           linkEl.textContent = fullLink
           linkEl.href = fullLink
-
-          // Copy button
-          const copyBtn = document.getElementById('copy-btn')
-          if (copyBtn) {
-            copyBtn.onclick = async () => {
-              await navigator.clipboard.writeText(fullLink)
-              alert('Referral link copied!')
-            }
-          }
         } catch (err) {
-          console.error(err)
           linkEl.textContent = 'Error loading link'
         }
       }
 
-      // Run immediately and on auth changes
       document.addEventListener('DOMContentLoaded', loadReferralLink)
       supabase.auth.onAuthStateChange(() => loadReferralLink())
+    </script>
+    <script type="module">
+      // Wait for Supabase to be initialized
+      async function waitForSupabase() {
+        while (!window.supabase) {
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+        return window.supabase
+      }
+
+      async function loadDashboard() {
+        const supabase = await waitForSupabase()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        // Redirect if not logged in
+        if (!user) {
+          window.location.href = '/'
+          return
+        }
+
+        // Update welcome message
+        document.getElementById('welcome').textContent = `Welcome back, ${user.email}!`
+
+        // Update points (hardcoded 5000 for now – we'll make real later)
+        document.getElementById('points-balance').textContent = '5,000'
+      }
+
+      loadDashboard()
 
       async function setButtonText() {
           const button = document.getElementById('points-button')
