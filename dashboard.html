@@ -313,7 +313,13 @@
 
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+    if (typeof supabase === 'undefined') {
 
+      console.error('Supabase library not loaded');
+
+      return;
+
+    }
 
     const linkEl = document.getElementById('ref-link');
 
