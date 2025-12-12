@@ -217,14 +217,15 @@
     'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
   )
 
-  async function showReferralLink() {
-    const el = document.getElementById('referral-link')
-    if (!el) return
+  async function updateReferralLink() {
+    const linkEl = document.getElementById('referral-link')
+    if (!linkEl) return
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
+
       if (!user) {
-        el.textContent = 'Please log in'
+        linkEl.textContent = 'Please log in'
         return
       }
 
@@ -240,16 +241,17 @@
         await supabase.from('profiles').update({ my_referral_code: code }).eq('id', user.id)
       }
 
-      const link = `https://sportsbook67.com/?ref=${code}`
-      el.textContent = link
-      el.href = link
-    } catch (e) {
-      el.textContent = 'Error loading link'
+      const fullLink = `https://sportsbook67.com/?ref=${code}`
+      linkEl.textContent = fullLink
+      linkEl.href = fullLink
+    } catch (err) {
+      linkEl.textContent = 'Error loading link'
     }
   }
 
-  document.addEventListener('DOMContentLoaded', showReferralLink)
-  supabase.auth.onAuthStateChange(showReferralLink)
+  // Run on load and when user logs in/out
+  document.addEventListener('DOMContentLoaded', updateReferralLink)
+  supabase.auth.onAuthStateChange(() => updateReferralLink())
 </script>
     <header>
         <div class="container">
