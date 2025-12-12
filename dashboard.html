@@ -306,10 +306,7 @@
 
 <script>
   window.addEventListener('load', function() {
-    const supabase = window.supabase.createClient(
-      'https://rtbkqwrfomjkualonmtj.supabase.co',
-      'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
-    )
+    const supabase = window.supabase.createClient('https://rtbkqwrfomjkualonmtj.supabase.co', 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR')
 
     async function loadReferralLink() {
       const linkEl = document.getElementById('referral-link')
