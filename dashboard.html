@@ -305,13 +305,13 @@
 
     const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
-    const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+    const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
 
 
 
-    const { createClient } = supabase;
+    // Safe way – no destructuring race condition
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = (window.supabase || supabase).createClient(supabaseUrl, supabaseKey);
 
 
 
@@ -327,13 +327,21 @@
 
 
 
-      let { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', user.id).single();
+      let { data: profile } = await supabase
+
+        .from('profiles')
+
+        .select('referral_code')
+
+        .eq('id', user.id)
+
+        .single();
 
 
 
       if (!profile?.referral_code) {
 
-        const code = user.id.replace(/-/g, '').substring(0,12).toUpperCase();
+        const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
 
         await supabase.from('profiles').upsert({ id: user.id, referral_code: code });
 
@@ -351,9 +359,7 @@
 
     } catch (e) {
 
-      linkEl.textContent = 'Error – check console';
-
-      console.error(e);
+      linkEl.textContent = 'Error loading link';
 
     }
 
