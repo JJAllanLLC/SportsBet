@@ -302,10 +302,13 @@
     <script src="auth.js"></script>
     <script src="script.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-  const supabase = Supabase.createClient(
+  (async () => {
+  const { createClient } = Supabase
+
+  const supabase = createClient(
     'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co',
     'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
   )
@@ -332,13 +335,14 @@
       profile = { my_referral_code: code }
     }
 
-    const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-    linkEl.textContent = fullLink
-    linkEl.href = fullLink
+    const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+    linkEl.textContent = link
+    linkEl.href = link
   }
 
   loadReferralLink()
   supabase.auth.onAuthStateChange(loadReferralLink)
+  })()
 </script>
 </body>
 </html>
