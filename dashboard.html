@@ -305,11 +305,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  const { createClient } = supabase
-
-  const supabase = createClient(
-    'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co',
-    'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
+  const supabase = window.supabase.createClient(
+    'https://rtbkqwrfomjkualonmtj.supabase.co',
+    'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'  // ← your full publishable key
   )
 
   async function loadReferralLink() {
