@@ -265,23 +265,9 @@
         <div class="referral-section">
             <h2 class="text-2xl font-bold text-gray-900 mb-4">Referral Program</h2>
             
-            <p class="text-lg font-semibold text-gray-800">
-              Share your link and earn <strong>10,000 points</strong> when your friend 
-              <strong>signs up and makes their first deposit</strong>!
-            </p>
-            
-            <p class="text-sm text-gray-600 mt-3">
-              10,000 points = $10 Amazon Gift Card • Points awarded only after friend deposits
-            </p>
+            <p id="ref-status">loading...</p>
 
-            <!-- Keep your existing referral link + copy button code below this -->
-            <div class="referral-link-box">
-                <a id="referral-link" class="text-blue-600 underline font-medium">loading…</a>
-                <button class="copy-btn" id="copy-btn">Copy Link</button>
-            </div>
-            <div class="referral-stats">
-                <strong>Referred users: 0</strong> → Earn 10,000 points per signup
-            </div>
+            <a id="ref-link" href="#" class="btn btn-primary" target="_blank">Copy Link</a>
         </div>
 
         <div class="redeem-section">
@@ -312,41 +298,73 @@
 
 
 
-  const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
+  const { createClient } = supabase;
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 
 
   document.addEventListener('DOMContentLoaded', async () => {
 
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
 
-    if (!user) { document.getElementById('ref-status').textContent = 'Please log in'; return; }
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+
+        document.getElementById('ref-status').textContent = 'Please log in to see your link';
+
+        return;
+
+      }
 
 
 
-    let { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', user.id).single();
+      let { data: profile } = await supabase
+
+        .from('profiles')
+
+        .select('referral_code')
+
+        .eq('id', user.id)
+
+        .single();
 
 
 
-    if (!profile?.referral_code) {
+      if (!profile?.referral_code) {
 
-      const newCode = user.id.replace(/-/g,'').slice(0,12).toUpperCase();
+        const newCode = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
 
-      await supabase.from('profiles').upsert({ id: user.id, referral_code: newCode });
+        await supabase
 
-      profile = { referral_code: newCode };
+          .from('profiles')
+
+          .upsert({ id: user.id, referral_code: newCode });
+
+        profile = { referral_code: newCode };
+
+      }
+
+
+
+      const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+      const linkEl = document.getElementById('ref-link');
+
+      linkEl.href = link;
+
+      linkEl.textContent = link;
+
+      document.getElementById('ref-status').textContent = '';
+
+    } catch (err) {
+
+      console.error(err);
+
+      document.getElementById('ref-status').textContent = 'Error loading link';
 
     }
-
-
-
-    const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
-
-    document.getElementById('ref-link').href = link;
-
-    document.getElementById('ref-link').textContent = link;
-
-    document.getElementById('ref-status').textContent = '';
 
   });
 
