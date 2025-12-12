@@ -275,9 +275,8 @@
             </p>
 
             <!-- Keep your existing referral link + copy button code below this -->
-            <p>Your referral link: <span id="ref-link">loading...</span></p>
             <div class="referral-link-box">
-                <code id="referral-link">https://sportsbook67.com/?ref=loading...</code>
+                <a id="referral-link" class="text-blue-600 underline">loading...</a>
                 <button class="copy-btn" id="copy-btn">Copy Link</button>
             </div>
             <div class="referral-stats">
@@ -321,19 +320,47 @@
 
         // Update points (hardcoded 5000 for now – we'll make real later)
         document.getElementById('points-balance').textContent = '5,000'
-
-        // Generate and show referral link
-        const refLink = `https://sportsbook67.com/?ref=${user.id}`
-        document.getElementById('ref-link').textContent = refLink
-
-        // Copy button
-        document.getElementById('copy-btn').onclick = async () => {
-          await navigator.clipboard.writeText(refLink)
-          alert('Referral link copied!')
-        }
       }
 
       loadDashboard()
+
+      async function loadReferralLink() {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          document.getElementById('referral-link').textContent = 'Log in to see your link';
+          return;
+        }
+
+        let { data: profile } = await supabase
+          .from('profiles')
+          .select('my_referral_code')
+          .eq('id', user.id)
+          .single();
+
+        // Auto-create referral code on first load if missing
+        if (!profile?.my_referral_code) {
+          const newCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+          await supabase
+            .from('profiles')
+            .update({ my_referral_code: newCode })
+            .eq('id', user.id);
+          profile = { my_referral_code: newCode };
+        }
+
+        const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`;
+        const el = document.getElementById('referral-link');
+        el.textContent = link;
+        el.href = link;
+
+        // Copy button
+        document.getElementById('copy-btn').onclick = async () => {
+          await navigator.clipboard.writeText(link);
+          alert('Referral link copied!');
+        }
+      }
+
+      loadReferralLink();
 
       function setButtonText() {
           const button = document.getElementById('points-button')
