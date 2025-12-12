@@ -265,9 +265,18 @@
         <div class="referral-section">
             <h2 class="text-2xl font-bold text-gray-900 mb-4">Referral Program</h2>
             
-            <p id="ref-status">loading...</p>
+            <h3>Share your link and earn 10,000 points when your friend signs up and makes their first deposit!</h3>
 
-            <a id="ref-link" href="#" style="word-break:break-all; font-weight:bold; color:#0066cc;">loading link...</a>
+            <p>10,000 points = $10 Amazon Gift Card • Points awarded only after friend deposits</p>
+
+            <p id="ref-status">Loading your referral link...</p>
+
+            <a id="ref-link" href="#" style="word-break:break-all; font-weight:bold; color:#0066cc; display:none;" target="_blank">Your referral link will appear here</a>
+
+            <br>
+
+            <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link').textContent || ''); alert('Link copied! Share it for points.');" class="btn btn-primary">Copy Link</button>
+
         </div>
 
         <div class="redeem-section">
@@ -292,77 +301,71 @@
 
 <script>
 
-  // Wait until the Supabase library is 100% loaded
-
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
 
     const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
-    const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+    const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+
+    
+
+    const { createClient } = supabase;
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 
 
-    const { createClient = window.supabase.createClient;
+    try {
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: { user } } = await supabaseClient.auth.getUser();
 
+      if (!user) {
 
+        document.getElementById('ref-link').textContent = 'Please log in';
 
-    const showLink = async () => {
-
-      try {
-
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) return document.getElementById('ref-link').textContent = 'Log in required';
-
-
-
-        let { data: profile } = await supabase
-
-          .from('profiles')
-
-          .select('referral_code')
-
-          .eq('id', user.id)
-
-          .single();
-
-
-
-        if (!profile?.referral_code) {
-
-          const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
-
-          await supabase.from('profiles').upsert({ id: user.id, referral_code: code });
-
-          profile = { referral_code: code };
-
-        }
-
-
-
-        const fullLink = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
-
-        const el = document.getElementById('ref-link');
-
-        el.href = fullLink;
-
-        el.textContent = fullLink;
-
-      } catch (e) {
-
-        document.getElementById('ref-link').textContent = 'Error – check console';
-
-        console.error(e);
+        return;
 
       }
 
-    };
+
+
+      let { data: profile } = await supabaseClient.from('profiles').select('referral_code').eq('id', user.id).single();
 
 
 
-    showLink();
+      if (!profile?.referral_code) {
+
+        const code = user.id.replace(/-/g, '').substring(0,12).toUpperCase();
+
+        await supabaseClient.from('profiles').upsert({ id: user.id, referral_code: code });
+
+        profile = { referral_code: code };
+
+      }
+
+
+
+      const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+      const el = document.getElementById('ref-link');
+
+      el.href = link;
+
+      el.textContent = link;
+
+      el.style.display = 'block';
+
+
+
+      document.getElementById('ref-status')?.remove();
+
+    } catch (e) {
+
+      document.getElementById('ref-link').textContent = 'Error – open console';
+
+      console.error(e);
+
+    }
 
   });
 
