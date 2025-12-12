@@ -305,41 +305,51 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  const supabase = window.supabase.createClient(
-    'https://rtbkqwrfomjkualonmtj.supabase.co',
-    'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
-  )
 
-  async function loadReferralLink() {
-    const linkEl = document.getElementById('referral-link')
-    if (!linkEl) return
+  const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) ? linkEl.textContent = 'Please log in' : null
+  const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
 
-      let { data: profile } = await supabase
-        .from('profiles')
-        .select('my_referral_code')
-        .eq('id', user.id)
-        .single()
 
-      if (!profile?.my_referral_code) {
-        const code = Math.random().toString(36).substring(2, 10).toUpperCase()
-        await supabase.from('profiles').update({ my_referral_code: code }).eq('id', user.id)
-        profile = { my_referral_code: code }
-      }
 
-      const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-      linkEl.textContent = fullLink
-      linkEl.href = fullLink
-    } catch (err) {
-      linkEl.textContent = 'Error loading link'
+  const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+
+
+  document.addEventListener('DOMContentLoaded', async () => {
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) { document.getElementById('ref-status').textContent = 'Please log in'; return; }
+
+
+
+    let { data: profile } = await supabase.from('profiles').select('referral_code').eq('id', user.id).single();
+
+
+
+    if (!profile?.referral_code) {
+
+      const newCode = user.id.replace(/-/g,'').slice(0,12).toUpperCase();
+
+      await supabase.from('profiles').upsert({ id: user.id, referral_code: newCode });
+
+      profile = { referral_code: newCode };
+
     }
-  }
 
-  loadReferralLink()
-  supabase.auth.onAuthStateChange(loadReferralLink)
+
+
+    const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+    document.getElementById('ref-link').href = link;
+
+    document.getElementById('ref-link').textContent = link;
+
+    document.getElementById('ref-status').textContent = '';
+
+  });
+
 </script>
 
 </body>
