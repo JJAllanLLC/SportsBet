@@ -4,6 +4,9 @@ let supabaseClient = null
 // Admin email - replace with your actual email
 const ADMIN_EMAIL = 'YOUR_PERSONAL_EMAIL@gmail.com'
 
+// hCaptcha site key - replace with your actual hCaptcha site key
+const HCAPTCHA_SITE_KEY = 'YOUR_HCAPTCHA_SITE_KEY'
+
 // Wait for Supabase to load, then initialize
 function initSupabase() {
     if (typeof supabase === 'undefined') {
@@ -136,6 +139,24 @@ function updateHeaderForLoggedOut() {
     nav.appendChild(loginBtn)
 }
 
+// Load hCaptcha script if not already loaded
+function loadHCaptchaScript() {
+    if (document.getElementById('hcaptcha-script')) {
+        return Promise.resolve()
+    }
+    
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.id = 'hcaptcha-script'
+        script.src = 'https://js.hcaptcha.com/1/api.js'
+        script.async = true
+        script.defer = true
+        script.onload = () => resolve()
+        script.onerror = () => reject(new Error('Failed to load hCaptcha'))
+        document.head.appendChild(script)
+    })
+}
+
 // Show login modal with email input
 function showLoginModal() {
     // Remove existing modal if any
@@ -165,6 +186,11 @@ function showLoginModal() {
     emailInput.style.cssText = 'width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box;'
     emailInput.required = true
 
+    // hCaptcha container
+    const hcaptchaContainer = document.createElement('div')
+    hcaptchaContainer.id = 'hcaptcha-container'
+    hcaptchaContainer.style.cssText = 'margin-bottom: 1rem; display: flex; justify-content: center;'
+
     const buttonContainer = document.createElement('div')
     buttonContainer.style.cssText = 'display: flex; gap: 1rem;'
 
@@ -180,12 +206,36 @@ function showLoginModal() {
     messageDiv.id = 'login-message'
     messageDiv.style.cssText = 'margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;'
 
+    let hcaptchaWidgetId = null
+
+    // Load and initialize hCaptcha
+    loadHCaptchaScript().then(() => {
+        if (typeof hcaptcha !== 'undefined' && HCAPTCHA_SITE_KEY && HCAPTCHA_SITE_KEY !== 'YOUR_HCAPTCHA_SITE_KEY') {
+            hcaptchaWidgetId = hcaptcha.render(hcaptchaContainer, {
+                sitekey: HCAPTCHA_SITE_KEY,
+                size: 'normal'
+            })
+        }
+    }).catch(() => {
+        // hCaptcha failed to load, but continue without it
+        console.warn('hCaptcha failed to load, continuing without it')
+    })
+
     // Send magic link
     sendBtn.addEventListener('click', async () => {
         const email = emailInput.value.trim()
         if (!email) {
             showMessage(messageDiv, 'Please enter your email', 'error')
             return
+        }
+
+        // Verify hCaptcha if it's enabled
+        if (hcaptchaWidgetId !== null && typeof hcaptcha !== 'undefined') {
+            const hcaptchaResponse = hcaptcha.getResponse(hcaptchaWidgetId)
+            if (!hcaptchaResponse) {
+                showMessage(messageDiv, 'Please complete the captcha verification', 'error')
+                return
+            }
         }
 
         sendBtn.disabled = true
@@ -202,6 +252,10 @@ function showLoginModal() {
             showMessage(messageDiv, error.message, 'error')
             sendBtn.disabled = false
             sendBtn.textContent = 'Send Magic Link'
+            // Reset hCaptcha on error
+            if (hcaptchaWidgetId !== null && typeof hcaptcha !== 'undefined') {
+                hcaptcha.reset(hcaptchaWidgetId)
+            }
         } else {
             showMessage(messageDiv, 'Check your email for the magic link!', 'success')
             emailInput.disabled = true
@@ -213,11 +267,17 @@ function showLoginModal() {
 
     // Close modal
     cancelBtn.addEventListener('click', () => {
+        if (hcaptchaWidgetId !== null && typeof hcaptcha !== 'undefined') {
+            hcaptcha.remove(hcaptchaWidgetId)
+        }
         modal.remove()
     })
 
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
+            if (hcaptchaWidgetId !== null && typeof hcaptcha !== 'undefined') {
+                hcaptcha.remove(hcaptchaWidgetId)
+            }
             modal.remove()
         }
     })
@@ -228,6 +288,7 @@ function showLoginModal() {
     modalContent.appendChild(title)
     modalContent.appendChild(description)
     modalContent.appendChild(emailInput)
+    modalContent.appendChild(hcaptchaContainer)
     modalContent.appendChild(buttonContainer)
     modalContent.appendChild(messageDiv)
 
