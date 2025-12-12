@@ -213,8 +213,8 @@
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-      const supabaseUrl = 'https://YOUR-PROJECT.supabase.co'      // ← replace
-      const supabaseAnonKey = 'your-anon-key-here'                // ← replace
+      const supabaseUrl = 'https://YOUR-PROJECT.supabase.co'   // ← replace with your real URL
+      const supabaseAnonKey = 'your-anon-key-here'             // ← replace with your real anon key
 
       window.supabase = createClient(supabaseUrl, supabaseAnonKey)
     </script>
@@ -342,23 +342,25 @@
         const linkEl = document.getElementById('referral-link')
         if (!linkEl) return
 
+        // Wait for Supabase to be initialized
+        const supabase = await waitForSupabase()
+
         try {
-          const { data: { user } } = await window.supabase.auth.getUser()
+          const { data: { user } } = await supabase.auth.getUser()
           if (!user) {
-            linkEl.textContent = 'Please log in'
+            linkEl.textContent = 'Please log in to see your link'
             return
           }
 
-          let { data: profile } = await window.supabase
+          let { data: profile } = await supabase
             .from('profiles')
             .select('my_referral_code')
             .eq('id', user.id)
             .single()
 
-          // Auto-create referral code if missing
           if (!profile?.my_referral_code) {
             const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-            await window.supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
+            await supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
             profile = { my_referral_code: newCode }
           }
 
@@ -367,9 +369,12 @@
           linkEl.href = fullLink
 
           // Copy button
-          document.getElementById('copy-btn').onclick = async () => {
-            await navigator.clipboard.writeText(fullLink)
-            alert('Referral link copied!')
+          const copyBtn = document.getElementById('copy-btn')
+          if (copyBtn) {
+            copyBtn.onclick = async () => {
+              await navigator.clipboard.writeText(fullLink)
+              alert('Referral link copied!')
+            }
           }
         } catch (err) {
           console.error(err)
@@ -377,9 +382,7 @@
         }
       }
 
-      // Run when page loads and when auth state changes
       document.addEventListener('DOMContentLoaded', loadReferralLink)
-      // Wait for Supabase to be ready before setting up auth state listener
       waitForSupabase().then(supabase => {
         supabase.auth.onAuthStateChange(() => loadReferralLink())
       })
