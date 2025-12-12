@@ -271,11 +271,9 @@
 
             <p id="ref-status">Loading your referral link...</p>
 
-            <a id="ref-link" href="#" style="word-break:break-all; font-weight:bold; color:#0066cc; display:none;" target="_blank">Your referral link will appear here</a>
+            <a id="ref-link" href="#" style="word-break: break-all; font-weight: bold; color: #0066cc; display: none;" target="_blank"></a>
 
-            <br>
-
-            <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link').textContent || ''); alert('Link copied! Share it for points.');" class="btn btn-primary">Copy Link</button>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link').textContent); alert('Copied! Share for 10k points.');">Copy Link</button>
 
         </div>
 
@@ -301,7 +299,7 @@
 
 <script>
 
-  window.addEventListener('load', async () => {
+  function initSupabase() {
 
     const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
@@ -309,31 +307,47 @@
 
 
 
-    // Safe way – no destructuring race condition
-
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
     if (typeof supabase === 'undefined') {
 
-      console.error('Supabase library not loaded');
+      console.error('Supabase library not loaded yet');
+
+      setTimeout(initSupabase, 100);
 
       return;
 
     }
 
+
+
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+
+
     const linkEl = document.getElementById('ref-link');
 
+    if (!linkEl) {
+
+      console.error('ref-link element not found');
+
+      return;
+
+    }
 
 
-    try {
 
-      const { data: { user } } = await supabase.auth.getUser();
+    supabaseClient.auth.getUser().then(({ data: { user }, error }) => {
 
-      if (!user) return linkEl.textContent = 'Log in required';
+      if (error || !user) {
+
+        linkEl.textContent = 'Please log in to see your referral link';
+
+        return;
+
+      }
 
 
 
-      let { data: profile } = await supabase
+      supabaseClient
 
         .from('profiles')
 
@@ -341,35 +355,85 @@
 
         .eq('id', user.id)
 
-        .single();
+        .single()
+
+        .then(({ data: profile, error: profileError }) => {
+
+          if (profileError || !profile?.referral_code) {
+
+            const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
+
+            supabaseClient
+
+              .from('profiles')
+
+              .upsert({ id: user.id, referral_code: code })
+
+              .then(() => {
+
+                const url = `https://www.sportsbook67.com?ref=${code}`;
+
+                linkEl.href = url;
+
+                linkEl.textContent = url;
+
+                linkEl.style.display = 'block';
+
+                const statusEl = document.getElementById('ref-status');
+
+                if (statusEl) statusEl.style.display = 'none';
+
+              })
+
+              .catch(e => console.error('Upsert error:', e));
+
+          } else {
+
+            const url = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+            linkEl.href = url;
+
+            linkEl.textContent = url;
+
+            linkEl.style.display = 'block';
+
+            const statusEl = document.getElementById('ref-status');
+
+            if (statusEl) statusEl.style.display = 'none';
+
+          }
+
+        })
+
+        .catch(e => {
+
+          console.error('Profile query error:', e);
+
+          linkEl.textContent = 'Error loading profile';
+
+        });
+
+    }).catch(e => {
+
+      console.error('Auth error:', e);
+
+      linkEl.textContent = 'Error loading user';
+
+    });
+
+  }
 
 
 
-      if (!profile?.referral_code) {
+  if (document.readyState === 'loading') {
 
-        const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
+    document.addEventListener('DOMContentLoaded', initSupabase);
 
-        await supabase.from('profiles').upsert({ id: user.id, referral_code: code });
+  } else {
 
-        profile = { referral_code: code };
+    initSupabase();
 
-      }
-
-
-
-      const url = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
-
-      linkEl.href = url;
-
-      linkEl.textContent = url;
-
-    } catch (e) {
-
-      linkEl.textContent = 'Error loading link';
-
-    }
-
-  });
+  }
 
 </script>
 
