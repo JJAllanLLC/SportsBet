@@ -311,13 +311,13 @@
   )
 
   async function loadReferralLink() {
-    const el = document.getElementById('referral-link')
-    if (!el) return
+    const linkEl = document.getElementById('referral-link')
+    if (!linkEl) return
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        el.textContent = 'Please log in'
+        linkEl.textContent = 'Please log in'
         return
       }
 
@@ -333,11 +333,11 @@
         profile = { my_referral_code: code }
       }
 
-      const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-      el.textContent = link
-      el.href = link
-    } catch (e) {
-      el.textContent = 'Error loading link'
+      const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+      linkEl.textContent = fullLink
+      linkEl.href = fullLink
+    } catch (err) {
+      linkEl.textContent = 'Error loading link'
     }
   }
 
