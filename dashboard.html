@@ -209,49 +209,49 @@
     </style>
 </head>
 <body>
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-      const supabase = createClient(
-        'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co',
-        'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
-      )
+  const supabase = createClient(
+    'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co',
+    'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
+  )
 
-      async function showReferralLink() {
-        const el = document.getElementById('referral-link')
-        if (!el) return
+  async function loadReferralLink() {
+    const linkEl = document.getElementById('referral-link')
+    if (!linkEl) return
 
-        try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) {
-            el.textContent = 'Please log in'
-            return
-          }
-
-          let { data: profile } = await supabase
-            .from('profiles')
-            .select('my_referral_code')
-            .eq('id', user.id)
-            .single()
-
-          if (!profile?.my_referral_code) {
-            const code = Math.random().toString(36).substring(2, 10).toUpperCase()
-            await supabase.from('profiles').update({ my_referral_code: code }).eq('id', user.id)
-            profile = { my_referral_code: code }
-          }
-
-          const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-          el.textContent = link
-          el.href = link
-        } catch (e) {
-          el.textContent = 'Error loading link'
-        }
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        linkEl.textContent = 'Please log in'
+        return
       }
 
-      // Run on load and when login state changes
-      document.addEventListener('DOMContentLoaded', showReferralLink)
-      supabase.auth.onAuthStateChange(showReferralLink)
-    </script>
+      let { data: profile } = await supabase
+        .from('profiles')
+        .select('my_referral_code')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.my_referral_code) {
+        const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+        await supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
+        profile = { my_referral_code: newCode }
+      }
+
+      const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+      linkEl.textContent = fullLink
+      linkEl.href = fullLink
+    } catch (err) {
+      linkEl.textContent = 'Error loading link'
+    }
+  }
+
+  // Run on load and on login/logout
+  document.addEventListener('DOMContentLoaded', loadReferralLink)
+  supabase.auth.onAuthStateChange(loadReferralLink)
+</script>
     <header>
         <div class="container">
             <h1>SportsBook67</h1>
