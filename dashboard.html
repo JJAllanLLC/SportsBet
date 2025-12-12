@@ -267,7 +267,7 @@
             
             <p id="ref-status">loading...</p>
 
-            <a id="ref-link" href="#" class="btn btn-primary" target="_blank">Copy Link</a>
+            <a id="ref-link" href="#" style="word-break:break-all; font-weight:bold; color:#0066cc;">loading link...</a>
         </div>
 
         <div class="redeem-section">
@@ -292,27 +292,29 @@
 
 <script>
 
-  const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
+  // Wait for the supabase global to be fully available
 
-  const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+  window.addEventListener('load', async () => {
+
+    const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
+
+    const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+
+    
+
+    const { createClient } = supabase;
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 
-
-  const { createClient } = supabase;
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-
-
-  document.addEventListener('DOMContentLoaded', async () => {
 
     try {
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
 
       if (!user) {
 
-        document.getElementById('ref-status').textContent = 'Please log in to see your link';
+        document.getElementById('ref-status').textContent = 'Please log in';
 
         return;
 
@@ -320,27 +322,15 @@
 
 
 
-      let { data: profile } = await supabase
+      let { data: profile } = await supabaseClient.from('profiles').select('referral_code').eq('id', user.id).single();
 
-        .from('profiles')
-
-        .select('referral_code')
-
-        .eq('id', user.id)
-
-        .single();
-
-
+      
 
       if (!profile?.referral_code) {
 
-        const newCode = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
+        const newCode = user.id.replace(/-/g,'').substring(0,12).toUpperCase();
 
-        await supabase
-
-          .from('profiles')
-
-          .upsert({ id: user.id, referral_code: newCode });
+        await supabaseClient.from('profiles').upsert({ id: user.id, referral_code: newCode });
 
         profile = { referral_code: newCode };
 
@@ -350,11 +340,9 @@
 
       const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
 
-      const linkEl = document.getElementById('ref-link');
+      document.getElementById('ref-link').href = link;
 
-      linkEl.href = link;
-
-      linkEl.textContent = link;
+      document.getElementById('ref-link').textContent = link;
 
       document.getElementById('ref-status').textContent = '';
 
@@ -362,7 +350,7 @@
 
       console.error(err);
 
-      document.getElementById('ref-status').textContent = 'Error loading link';
+      document.getElementById('ref-status').textContent = 'Error';
 
     }
 
