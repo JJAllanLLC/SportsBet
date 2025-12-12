@@ -212,20 +212,19 @@
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-      const supabaseUrl = 'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co'
-      const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
+      const supabase = createClient(
+        'https://sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR.supabase.co',
+        'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR'
+      )
 
-      window.supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-      // Referral link logic
-      async function loadReferralLink() {
-        const linkEl = document.getElementById('referral-link')
-        if (!linkEl) return
+      async function showReferralLink() {
+        const el = document.getElementById('referral-link')
+        if (!el) return
 
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (!user) {
-            linkEl.textContent = 'Please log in'
+            el.textContent = 'Please log in'
             return
           }
 
@@ -236,21 +235,22 @@
             .single()
 
           if (!profile?.my_referral_code) {
-            const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-            await supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
-            profile = { my_referral_code: newCode }
+            const code = Math.random().toString(36).substring(2, 10).toUpperCase()
+            await supabase.from('profiles').update({ my_referral_code: code }).eq('id', user.id)
+            profile = { my_referral_code: code }
           }
 
-          const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-          linkEl.textContent = fullLink
-          linkEl.href = fullLink
-        } catch (err) {
-          linkEl.textContent = 'Error loading link'
+          const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+          el.textContent = link
+          el.href = link
+        } catch (e) {
+          el.textContent = 'Error loading link'
         }
       }
 
-      document.addEventListener('DOMContentLoaded', loadReferralLink)
-      supabase.auth.onAuthStateChange(() => loadReferralLink())
+      // Run on load and when login state changes
+      document.addEventListener('DOMContentLoaded', showReferralLink)
+      supabase.auth.onAuthStateChange(showReferralLink)
     </script>
     <header>
         <div class="container">
@@ -344,60 +344,5 @@
 
     <script src="auth.js"></script>
     <script src="script.js"></script>
-    <script type="module">
-      // Wait for Supabase to be initialized
-      async function waitForSupabase() {
-        while (!window.supabase) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-        }
-        return window.supabase
-      }
-
-      async function loadDashboard() {
-        const supabase = await waitForSupabase()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        // Redirect if not logged in
-        if (!user) {
-          window.location.href = '/'
-          return
-        }
-
-        // Update welcome message
-        document.getElementById('welcome').textContent = `Welcome back, ${user.email}!`
-
-        // Update points (hardcoded 5000 for now – we'll make real later)
-        document.getElementById('points-balance').textContent = '5,000'
-      }
-
-      loadDashboard()
-
-      async function setButtonText() {
-          const button = document.getElementById('points-button')
-          if (!button) return
-
-          try {
-            const supabase = await waitForSupabase()
-            supabase.auth.getUser().then(({ data: { user } }) => {
-                if (user) {
-                    button.textContent = 'My Rewards (5,000 pts)'
-                } else {
-                    button.textContent = 'My Rewards → 5,000 Points Free'
-                }
-            }).catch(() => {
-                button.textContent = 'My Rewards → 5,000 Points Free'
-            })
-          } catch (err) {
-            button.textContent = 'My Rewards → 5,000 Points Free'
-          }
-      }
-
-      // Run on load + when auth changes
-      document.addEventListener('DOMContentLoaded', async () => {
-        await setButtonText()
-        const supabase = await waitForSupabase()
-        supabase.auth.onAuthStateChange(setButtonText)
-      })
-    </script>
 </body>
 </html>
