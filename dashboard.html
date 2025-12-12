@@ -314,31 +314,27 @@
     const linkEl = document.getElementById('referral-link')
     if (!linkEl) return
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        linkEl.textContent = 'Please log in'
-        return
-      }
-
-      let { data: profile } = await supabase
-        .from('profiles')
-        .select('my_referral_code')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.my_referral_code) {
-        const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-        await supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
-        profile = { my_referral_code: newCode }
-      }
-
-      const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-      linkEl.textContent = fullLink
-      linkEl.href = fullLink
-    } catch (err) {
-      linkEl.textContent = 'Error loading link'
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      linkEl.textContent = 'Please log in'
+      return
     }
+
+    let { data: profile } = await supabase
+      .from('profiles')
+      .select('my_referral_code')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.my_referral_code) {
+      const code = Math.random().toString(36).substring(2, 10).toUpperCase()
+      await supabase.from('profiles').update({ my_referral_code: code }).eq('id', user.id)
+      profile = { my_referral_code: code }
+    }
+
+    const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+    linkEl.textContent = fullLink
+    linkEl.href = fullLink
   }
 
   loadReferralLink()
