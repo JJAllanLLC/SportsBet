@@ -299,43 +299,27 @@
 
 <script>
 
-  function initSupabase() {
+function initSupabase() {
 
-    const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
+  const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
-    const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
-
-
-
-    if (typeof supabase === 'undefined') {
-
-      console.error('Supabase library not loaded yet');
-
-      setTimeout(initSupabase, 100);
-
-      return;
-
-    }
+  const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
 
 
 
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 
 
-    const linkEl = document.getElementById('ref-link');
+  const linkEl = document.getElementById('ref-link');
 
-    if (!linkEl) {
-
-      console.error('ref-link element not found');
-
-      return;
-
-    }
+  if (!linkEl) return;
 
 
 
-    supabaseClient.auth.getUser().then(({ data: { user }, error }) => {
+  supabaseClient.auth.getUser()
+
+    .then(({ data: { user }, error }) => {
 
       if (error || !user) {
 
@@ -347,7 +331,7 @@
 
 
 
-      supabaseClient
+      return supabaseClient
 
         .from('profiles')
 
@@ -363,65 +347,47 @@
 
             const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
 
-            supabaseClient
+            return supabaseClient.from('profiles').upsert({ id: user.id, referral_code: code })
 
-              .from('profiles')
-
-              .upsert({ id: user.id, referral_code: code })
-
-              .then(() => {
-
-                const url = `https://www.sportsbook67.com?ref=${code}`;
-
-                linkEl.href = url;
-
-                linkEl.textContent = url;
-
-                linkEl.style.display = 'block';
-
-                const statusEl = document.getElementById('ref-status');
-
-                if (statusEl) statusEl.style.display = 'none';
-
-              })
-
-              .catch(e => console.error('Upsert error:', e));
-
-          } else {
-
-            const url = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
-
-            linkEl.href = url;
-
-            linkEl.textContent = url;
-
-            linkEl.style.display = 'block';
-
-            const statusEl = document.getElementById('ref-status');
-
-            if (statusEl) statusEl.style.display = 'none';
+              .then(() => ({ referral_code: code }));
 
           }
 
-        })
-
-        .catch(e => {
-
-          console.error('Profile query error:', e);
-
-          linkEl.textContent = 'Error loading profile';
+          return profile;
 
         });
 
-    }).catch(e => {
+    })
 
-      console.error('Auth error:', e);
+    .then(profile => {
 
-      linkEl.textContent = 'Error loading user';
+      if (profile) {
+
+        const url = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+        linkEl.href = url;
+
+        linkEl.textContent = url;
+
+        linkEl.style.display = 'block';
+
+      }
+
+      const statusEl = document.getElementById('ref-status');
+
+      if (statusEl) statusEl.style.display = 'none';
+
+    })
+
+    .catch(e => {
+
+      console.error('Referral error:', e);
+
+      linkEl.textContent = 'Error loading referral link';
 
     });
 
-  }
+}
 
 
 
