@@ -292,67 +292,77 @@
 
 <script>
 
-  // Wait for the supabase global to be fully available
+  // Wait until the Supabase library is 100% loaded
 
-  window.addEventListener('load', async () => {
+  window.addEventListener('load', () => {
 
     const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
 
-    const supabaseAnonKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
-
-    
-
-    const { createClient } = supabase;
-
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
 
 
 
-    try {
+    const { createClient = window.supabase.createClient;
 
-      const { data: { user } } = await supabaseClient.auth.getUser();
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-      if (!user) {
 
-        document.getElementById('ref-status').textContent = 'Please log in';
 
-        return;
+    const showLink = async () => {
+
+      try {
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return document.getElementById('ref-link').textContent = 'Log in required';
+
+
+
+        let { data: profile } = await supabase
+
+          .from('profiles')
+
+          .select('referral_code')
+
+          .eq('id', user.id)
+
+          .single();
+
+
+
+        if (!profile?.referral_code) {
+
+          const code = user.id.replace(/-/g, '').substring(0, 12).toUpperCase();
+
+          await supabase.from('profiles').upsert({ id: user.id, referral_code: code });
+
+          profile = { referral_code: code };
+
+        }
+
+
+
+        const fullLink = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
+
+        const el = document.getElementById('ref-link');
+
+        el.href = fullLink;
+
+        el.textContent = fullLink;
+
+      } catch (e) {
+
+        document.getElementById('ref-link').textContent = 'Error – check console';
+
+        console.error(e);
 
       }
 
-
-
-      let { data: profile } = await supabaseClient.from('profiles').select('referral_code').eq('id', user.id).single();
-
-      
-
-      if (!profile?.referral_code) {
-
-        const newCode = user.id.replace(/-/g,'').substring(0,12).toUpperCase();
-
-        await supabaseClient.from('profiles').upsert({ id: user.id, referral_code: newCode });
-
-        profile = { referral_code: newCode };
-
-      }
+    };
 
 
 
-      const link = `https://www.sportsbook67.com?ref=${profile.referral_code}`;
-
-      document.getElementById('ref-link').href = link;
-
-      document.getElementById('ref-link').textContent = link;
-
-      document.getElementById('ref-status').textContent = '';
-
-    } catch (err) {
-
-      console.error(err);
-
-      document.getElementById('ref-status').textContent = 'Error';
-
-    }
+    showLink();
 
   });
 
