@@ -213,8 +213,8 @@
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-      const supabaseUrl = 'https://YOUR-PROJECT.supabase.co'  // ← replace with your real URL
-      const supabaseAnonKey = 'your-anon-key-here'            // ← replace with your real anon key
+      const supabaseUrl = 'https://YOUR-PROJECT.supabase.co'      // ← replace
+      const supabaseAnonKey = 'your-anon-key-here'                // ← replace
 
       window.supabase = createClient(supabaseUrl, supabaseAnonKey)
     </script>
@@ -339,46 +339,50 @@
       loadDashboard()
 
       async function loadReferralLink() {
+        const linkEl = document.getElementById('referral-link')
+        if (!linkEl) return
+
         try {
-          const supabase = await waitForSupabase()
-          const { data: { user } } = await supabase.auth.getUser()
-          
+          const { data: { user } } = await window.supabase.auth.getUser()
           if (!user) {
-            document.getElementById('referral-link').textContent = 'Log in to see your link'
+            linkEl.textContent = 'Please log in'
             return
           }
 
-          let { data: profile } = await supabase
+          let { data: profile } = await window.supabase
             .from('profiles')
             .select('my_referral_code')
             .eq('id', user.id)
             .single()
 
-          // Auto-create code if missing
+          // Auto-create referral code if missing
           if (!profile?.my_referral_code) {
             const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-            await supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
+            await window.supabase.from('profiles').update({ my_referral_code: newCode }).eq('id', user.id)
             profile = { my_referral_code: newCode }
           }
 
-          const link = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
-          const el = document.getElementById('referral-link')
-          el.textContent = link
-          el.href = link
+          const fullLink = `https://sportsbook67.com/?ref=${profile.my_referral_code}`
+          linkEl.textContent = fullLink
+          linkEl.href = fullLink
 
           // Copy button
           document.getElementById('copy-btn').onclick = async () => {
-            await navigator.clipboard.writeText(link)
+            await navigator.clipboard.writeText(fullLink)
             alert('Referral link copied!')
           }
         } catch (err) {
           console.error(err)
-          document.getElementById('referral-link').textContent = 'Error loading link'
+          linkEl.textContent = 'Error loading link'
         }
       }
 
-      // Run when page loads
-      loadReferralLink()
+      // Run when page loads and when auth state changes
+      document.addEventListener('DOMContentLoaded', loadReferralLink)
+      // Wait for Supabase to be ready before setting up auth state listener
+      waitForSupabase().then(supabase => {
+        supabase.auth.onAuthStateChange(() => loadReferralLink())
+      })
 
       async function setButtonText() {
           const button = document.getElementById('points-button')
