@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Best Pennsylvania Sportsbook Bonuses December 2025 – Up to $6,500+ Free</title>
   <meta name="description" content="Claim over $6,500 in Pennsylvania sportsbook welcome bonuses this December 2025 from FanDuel, DraftKings, BetMGM, Caesars, Fanatics, bet365 + earn 5,000 points free and $10 Amazon gift cards per referral at SportsBook67.">
-  <!-- Your existing CSS links -->
+  <link rel="stylesheet" href="styles.css">
   <style>
     .bonus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0; }
     .bonus-card { background:#fff; border:1px solid #eee; border-radius:12px; padding:24px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,.05); }
@@ -17,7 +17,21 @@
   </style>
 </head>
 <body>
-  <!-- Existing header/nav -->
+  <header>
+    <div class="container">
+      <h1>SportsBook67</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="nfl.html">NFL</a>
+        <a href="nba.html">NBA</a>
+        <a href="ufc.html">UFC</a>
+        <a id="points-button" href="/dashboard.html" class="btn-orange" style="font-weight:bold;">
+          My Rewards → 5,000 Points Free
+        </a>
+        <!-- Auth buttons will be added by auth.js -->
+      </nav>
+    </div>
+  </header>
 
   <main style="max-width:1200px; margin:40px auto; padding:0 20px;">
     <h1>Best Pennsylvania Sportsbook Bonuses December 2025 – Up to $6,500+ in Free Bets</h1>
@@ -74,7 +88,42 @@
     <p>Sports betting is fully legal statewide for ages 21+. All offers from Pennsylvania Gaming Control Board licensed operators.</p>
   </main>
 
-  <!-- Existing footer + Supabase script -->
+  <footer>
+    <div class="container">
+      <p>© 2025 JJAllanLLC</p>
+    </div>
+  </footer>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    setTimeout(() => {
+      const supabaseUrl = 'https://rtbkqwrfomjkualonmtj.supabase.co';
+      const supabaseKey = 'sb_publishable_fbhwxMwausY-1_51wr1EIA_xAZ2jDtR';
+      const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+      
+      function setButtonText() {
+        const button = document.getElementById('points-button');
+        if (!button) return;
+        
+        supabaseClient.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            button.textContent = 'My Rewards (5,000 pts)';
+          } else {
+            button.textContent = 'My Rewards → 5,000 Points Free';
+          }
+        }).catch(() => {
+          button.textContent = 'My Rewards → 5,000 Points Free';
+        });
+      }
+      
+      // Run on load + when auth changes
+      document.addEventListener('DOMContentLoaded', setButtonText);
+      supabaseClient.auth.onAuthStateChange(setButtonText);
+    }, 100);
+  </script>
 </body>
 </html>
 
