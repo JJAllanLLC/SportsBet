@@ -61,6 +61,8 @@ tr.highlight { background:#fffbeb; }
 .bonus-card .cta-btn { background:#ff6200; color:#fff; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; margin-top:12px; }
 .bonus-card .cta-btn:hover { opacity:0.9; }
 
+.bonus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0; }
+
 footer { background:#0a2540; color:white; text-align:center; padding:2rem 0; }
 
 @media (max-width:768px) {
