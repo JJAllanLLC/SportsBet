@@ -16,3 +16,16 @@ window.addEventListener('scroll', () => {
 
 // Login functionality is now handled by auth.js
 
+// State selector redirect functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const stateSelector = document.getElementById('state-selector');
+  if (stateSelector) {
+    stateSelector.addEventListener('change', function() {
+      const state = this.value;
+      if (state && state !== '') {
+        window.location.href = '/' + state.toLowerCase().replace(' ', '-') + '.html';
+      }
+    });
+  }
+});
+
