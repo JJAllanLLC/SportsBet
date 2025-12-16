@@ -54,7 +54,12 @@ tr.highlight { background:#fffbeb; }
 
 .points-teaser p { font-size:1.2rem; margin-bottom:2rem; }
 
+.bonus-card { background:#fff; border:1px solid #eee; border-radius:12px; padding:24px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,.05); }
 .bonus-card img { max-width:160px; height:auto; margin-bottom:16px; }
+.bonus-card .offer { font-size:26px; font-weight:800; color:#0a0; margin:12px 0; }
+.bonus-card .points-badge { background:#0066cc; color:#fff; padding:6px 12px; border-radius:20px; font-size:14px; display:inline-block; margin:8px 0; }
+.bonus-card .cta-btn { background:#ff6200; color:#fff; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:bold; text-decoration:none; display:inline-block; margin-top:12px; }
+.bonus-card .cta-btn:hover { opacity:0.9; }
 
 footer { background:#0a2540; color:white; text-align:center; padding:2rem 0; }
 
