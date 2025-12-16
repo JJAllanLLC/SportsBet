@@ -54,6 +54,8 @@ tr.highlight { background:#fffbeb; }
 
 .points-teaser p { font-size:1.2rem; margin-bottom:2rem; }
 
+.bonus-card img { max-width:160px; height:auto; margin-bottom:16px; }
+
 footer { background:#0a2540; color:white; text-align:center; padding:2rem 0; }
 
 @media (max-width:768px) {
