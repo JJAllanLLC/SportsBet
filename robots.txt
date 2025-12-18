@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sportsbook67.com/sitemap.xml
+
+# Allow all good bots to crawl everything – maximizes SEO indexing for bonus/state pages
+# Add this file to root so it overrides any Cloudflare defaults and clears "blocked by robots.txt" warnings
